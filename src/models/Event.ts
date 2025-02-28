@@ -24,7 +24,7 @@ export interface IEvent extends Document {
   availableSpots: number;
   startDate: Date;
   endDate: Date;
-  location: string;
+  location: mongoose.Types.ObjectId;
   contactNumber: string;
   eventItineraries: IDayItinerary[];
   importantInstruction: string;
@@ -65,7 +65,8 @@ const EventSchema: Schema = new Schema(
       required: true,
     },
     location: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "Location",
       required: true,
     },
     contactNumber: {

@@ -5,7 +5,6 @@ const router = express.Router();
 
 // Public routes
 router.get("/", eventController.getAllEvents);
-router.get("/admin", eventController.getAllEvents);
 //@ts-ignore
 router.get("/:id", eventController.getEventById);
 

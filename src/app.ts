@@ -5,6 +5,9 @@ import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import { eventRoutes } from "./routes/eventRoutes";
+import locationRoutes from "./routes/locationRoutes";
+import internshipRequestRoutes from "./routes/internshipRequestRoutes";
+import jobRequestRoutes from "./routes/jobRequestRoutes";
 
 // Load environment variables
 // Load environment variables
@@ -27,7 +30,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/events", eventRoutes);
-
+app.use("/api/locations", locationRoutes);
+app.use("/api/internship-requests", internshipRequestRoutes);
+app.use("/api/job-requests", jobRequestRoutes);
 // Basic route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Swapnapurti Camping API" });
