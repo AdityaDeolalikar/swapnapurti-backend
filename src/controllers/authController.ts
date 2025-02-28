@@ -1,26 +1,25 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User";
+import { Request, Response } from "express";
 
 // Register Step 1
-exports.registerStep1 = async (req, res) => {
+export const registerStep1 = async (req: Request, res: Response) => {
   try {
     const { fullName, email, gender, mobile } = req.body;
 
     // Check if user already exists with email or mobile
     const existingUser = await User.findOne({
-      $or: [
-        { email: email.toLowerCase() },
-        { mobile }
-      ]
+      $or: [{ email: email.toLowerCase() }, { mobile }],
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: existingUser.email === email.toLowerCase() 
-          ? 'Email already registered' 
-          : 'Mobile number already registered'
+        message:
+          existingUser.email === email.toLowerCase()
+            ? "Email already registered"
+            : "Mobile number already registered",
       });
     }
 
@@ -30,35 +29,35 @@ exports.registerStep1 = async (req, res) => {
       email,
       gender,
       mobile,
-      registrationStep: 1
+      registrationStep: 1,
     });
 
     await user.save();
 
     res.status(201).json({
       success: true,
-      message: 'Step 1 registration successful',
+      message: "Step 1 registration successful",
       data: {
         userId: user._id,
         fullName: user.fullName,
         email: user.email,
         gender: user.gender,
         mobile: user.mobile,
-        registrationStep: user.registrationStep
-      }
+        registrationStep: user.registrationStep,
+      },
     });
   } catch (error) {
-    console.error('Registration Step 1 Error:', error);
+    console.error("Registration Step 1 Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: (error as Error).message,
     });
   }
 };
 
 // Register Step 2
-exports.registerStep2 = async (req, res) => {
+export const registerStep2 = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const {
@@ -71,7 +70,7 @@ exports.registerStep2 = async (req, res) => {
       organization,
       photo,
       emergencyMobile,
-      password
+      password,
     } = req.body;
 
     // Find the user by ID
@@ -80,7 +79,7 @@ exports.registerStep2 = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: "User not found",
       });
     }
 
@@ -88,7 +87,7 @@ exports.registerStep2 = async (req, res) => {
     if (user.registrationStep !== 1) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid registration step'
+        message: "Invalid registration step",
       });
     }
 
@@ -96,7 +95,8 @@ exports.registerStep2 = async (req, res) => {
     if (emergencyMobile === user.mobile) {
       return res.status(400).json({
         success: false,
-        message: 'Emergency contact must be different from primary mobile number'
+        message:
+          "Emergency contact must be different from primary mobile number",
       });
     }
 
@@ -117,26 +117,26 @@ exports.registerStep2 = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Registration completed successfully',
+      message: "Registration completed successfully",
       data: {
         userId: user._id,
         fullName: user.fullName,
         email: user.email,
-        registrationStep: user.registrationStep
-      }
+        registrationStep: user.registrationStep,
+      },
     });
   } catch (error) {
-    console.error('Registration Step 2 Error:', error);
+    console.error("Registration Step 2 Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: (error as Error).message,
     });
   }
 };
 
 // Login
-exports.login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -145,7 +145,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Invalid email or password",
       });
     }
 
@@ -153,64 +153,70 @@ exports.login = async (req, res) => {
     if (user.registrationStep !== 2) {
       return res.status(400).json({
         success: false,
-        message: 'Please complete your registration first'
+        message: "Please complete your registration first",
       });
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password as string
+    );
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Invalid email or password",
       });
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id.toString() },
+      //@ts-ignore
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      }
     );
 
     res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       data: {
         token,
         user: {
           id: user._id,
           fullName: user.fullName,
           email: user.email,
-          photo: user.photo
-        }
-      }
+          photo: user.photo,
+        },
+      },
     });
   } catch (error) {
-    console.error('Login Error:', error);
+    console.error("Login Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: (error as Error).message,
     });
   }
 };
 
 // Logout
-exports.logout = async (req, res) => {
+export const logout = async (req: Request, res: Response) => {
   try {
     // Since we're using JWT, we don't need to do anything on the server
     // The client will remove the token
     res.status(200).json({
       success: true,
-      message: 'Logged out successfully'
+      message: "Logged out successfully",
     });
   } catch (error) {
-    console.error('Logout Error:', error);
+    console.error("Logout Error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: (error as Error).message,
     });
   }
-}; 
+};

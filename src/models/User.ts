@@ -1,100 +1,103 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema({
   // Step 1 fields
   fullName: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
   },
   gender: {
     type: String,
     required: true,
-    enum: ['male', 'female']
+    enum: ["male", "female"],
   },
   mobile: {
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
   },
   // Step 2 fields
   dateOfBirth: {
     type: Date,
-    required: false
+    required: false,
   },
   bloodGroup: {
     type: String,
     required: false,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+    enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
   },
   permanentAddress: {
     type: String,
     required: false,
-    trim: true
+    trim: true,
   },
   temporaryAddress: {
     type: String,
     required: false,
-    trim: true
+    trim: true,
   },
   district: {
     type: String,
     required: false,
-    trim: true
+    trim: true,
   },
   occupation: {
     type: String,
     required: false,
-    trim: true
+    trim: true,
   },
   organization: {
     type: String,
     required: false,
-    trim: true
+    trim: true,
   },
   photo: {
     type: String,
-    required: false
+    required: false,
   },
   emergencyMobile: {
     type: String,
     required: false,
-    trim: true
+    trim: true,
   },
   password: {
     type: String,
-    required: false
+    required: false,
   },
   registrationStep: {
     type: Number,
     default: 1,
-    enum: [1, 2]
+    enum: [1, 2],
   },
   isVerified: {
     type: Boolean,
-    default: false
+    default: false,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (this.isModified('password')) {
+userSchema.pre("save", async function (next: any) {
+  if (this.isModified("password")) {
+    // @ts-ignore
     this.password = await bcrypt.hash(this.password, 12);
   }
   next();
 });
 
-module.exports = mongoose.model('User', userSchema); 
+const User = mongoose.model("User", userSchema);
+
+export default User;
