@@ -8,6 +8,7 @@ import { eventRoutes } from "./routes/eventRoutes";
 import locationRoutes from "./routes/locationRoutes";
 import internshipRequestRoutes from "./routes/internshipRequestRoutes";
 import jobRequestRoutes from "./routes/jobRequestRoutes";
+import organizationRoutes from "./routes/organizationRoutes";
 
 // Load environment variables
 // Load environment variables
@@ -33,6 +34,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/internship-requests", internshipRequestRoutes);
 app.use("/api/job-requests", jobRequestRoutes);
+app.use("/api/organizations", organizationRoutes);
 // Basic route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Swapnapurti Camping API" });
