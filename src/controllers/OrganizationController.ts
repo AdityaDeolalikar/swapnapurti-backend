@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { OrganizationService } from "../services/OrganizationService";
 import AppError from "../core/errors/app-error";
+import { AppRequestHandler } from "../common/types/request";
+import { IOrganization } from "../models/Organization";
 
 export class OrganizationController {
   private organizationService: OrganizationService;
@@ -9,11 +11,12 @@ export class OrganizationController {
     this.organizationService = new OrganizationService();
   }
 
-  createOrganization = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  createOrganization: AppRequestHandler<
+    IOrganization,
+    IOrganization,
+    unknown,
+    unknown
+  > = async (req, res, next) => {
     try {
       const organization = await this.organizationService.createOrganization(
         req.body
@@ -27,14 +30,16 @@ export class OrganizationController {
     }
   };
 
-  getAllOrganizations = async (
-    _req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  getAllOrganizations: AppRequestHandler<
+    IOrganization[],
+    unknown,
+    { orientationStatus: string },
+    unknown
+  > = async (req, res, next) => {
     try {
-      const organizations =
-        await this.organizationService.getAllOrganizations();
+      const organizations = await this.organizationService.getAllOrganizations(
+        req.query
+      );
       res.status(200).json({
         success: true,
         data: organizations,
@@ -44,18 +49,18 @@ export class OrganizationController {
     }
   };
 
-  getOrganizationById = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  getOrganizationById: AppRequestHandler<
+    IOrganization,
+    unknown,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       const organization = await this.organizationService.getOrganizationById(
         req.params.id
       );
       if (!organization) {
-        res.status(404).json({ message: "Organization not found" });
-        return;
+        throw new AppError("Organization not found", 404);
       }
       res.status(200).json({
         success: true,
@@ -66,19 +71,19 @@ export class OrganizationController {
     }
   };
 
-  updateOrganization = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  updateOrganization: AppRequestHandler<
+    IOrganization,
+    IOrganization,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       const organization = await this.organizationService.updateOrganization(
         req.params.id,
         req.body
       );
       if (!organization) {
-        res.status(404).json({ message: "Organization not found" });
-        return;
+        throw new AppError("Organization not found", 404);
       }
       res.status(200).json({
         success: true,
@@ -89,21 +94,18 @@ export class OrganizationController {
     }
   };
 
-  deleteOrganization = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  deleteOrganization: AppRequestHandler<
+    unknown,
+    unknown,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       const organization = await this.organizationService.deleteOrganization(
         req.params.id
       );
       if (!organization) {
-        res.status(404).json({
-          success: false,
-          message: "Organization not found",
-        });
-        return;
+        throw new AppError("Organization not found", 404);
       }
       res.status(200).json({
         success: true,
@@ -114,11 +116,12 @@ export class OrganizationController {
     }
   };
 
-  getOrganizationsByDistrict = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  getOrganizationsByDistrict: AppRequestHandler<
+    IOrganization[],
+    unknown,
+    unknown,
+    { district: string }
+  > = async (req, res, next) => {
     try {
       const organizations =
         await this.organizationService.getOrganizationsByDistrict(
@@ -133,30 +136,27 @@ export class OrganizationController {
     }
   };
 
-  assignOrganization = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { organizationId, userId } = req.body;
-      const organization = await this.organizationService.assignOrganization(
-        organizationId,
-        userId
-      );
-      if (!organization) {
-        res.status(404).json({
-          success: false,
-          message: "Organization not found",
-        });
-        return;
-      }
-      res.status(200).json({
-        success: true,
-        data: organization,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+  // assignOrganization: AppRequestHandler<
+  //   IOrganization,
+  //   IOrganization,
+  //   unknown,
+  //   { organizationId: string; userId: string }
+  // > = async (req, res, next) => {
+  //   try {
+  //     const { organizationId, userId } = req.body;
+  //     const organization = await this.organizationService.assignOrganization(
+  //       organizationId,
+  //       userId
+  //     );
+  //     if (!organization) {
+  //       throw new AppError("Organization not found", 404);
+  //     }
+  //     res.status(200).json({
+  //       success: true,
+  //       data: organization,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // };
 }

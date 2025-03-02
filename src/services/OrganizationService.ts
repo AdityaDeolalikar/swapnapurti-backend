@@ -9,8 +9,8 @@ export class OrganizationService {
     return await organization.save();
   }
 
-  async getAllOrganizations(): Promise<IOrganization[]> {
-    return await Organization.find().populate("takenBy");
+  async getAllOrganizations(query: any = {}): Promise<IOrganization[]> {
+    return await Organization.find(query).populate("takenBy");
   }
 
   async getOrganizationById(id: string): Promise<IOrganization | null> {

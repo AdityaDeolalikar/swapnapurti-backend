@@ -8,5 +8,5 @@ export enum rolesEnum {
   PARTICIPANT = "PARTICIPANT",
 }
 
-export type roles = keyof typeof rolesEnum;
+export type TRoles = keyof typeof rolesEnum;
 export const roles = Object.values<keyof typeof rolesEnum>(rolesEnum);

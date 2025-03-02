@@ -1,5 +1,6 @@
 import mongoose, { Types } from "mongoose";
 import bcrypt from "bcryptjs";
+import { roles, TRoles } from "../constants/roles";
 
 export interface IUser {
   _id: Types.ObjectId;
@@ -19,10 +20,10 @@ export interface IUser {
   password: string;
   registrationStep: number;
   isVerified: boolean;
-  createdAt: Date;
+  role: TRoles;
 }
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<IUser>({
   // Step 1 fields
   fullName: {
     type: String,
@@ -104,9 +105,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  role: {
+    type: String,
+    required: true,
+    enum: roles,
+    // default: rolesEnum.PARTICIPANT,
   },
 });
 
@@ -115,6 +118,18 @@ userSchema.pre("save", async function (next: any) {
   if (this.isModified("password")) {
     // @ts-ignore
     this.password = await bcrypt.hash(this.password, 12);
+  }
+  next();
+});
+
+userSchema.pre(["findOneAndUpdate", "updateOne"], async function (next) {
+  const update = this.getUpdate();
+  //@ts-ignore
+  const password = update?.["$set"]?.password || update?.password;
+  if (password) {
+    // @ts-ignore
+    update.password = await bcrypt.hash(password, 12);
+    delete update["$set"]?.password;
   }
   next();
 });

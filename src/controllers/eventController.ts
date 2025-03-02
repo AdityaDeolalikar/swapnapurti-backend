@@ -4,7 +4,7 @@ import { IEvent } from "../models/Event";
 import AppError from "../core/errors/app-error";
 
 class EventController {
-  createEvent: AppRequestHandler<any, IEvent> = async (req, res, next) => {
+  createEvent: AppRequestHandler<IEvent, IEvent> = async (req, res, next) => {
     try {
       const eventData = {
         ...req.body,
