@@ -1,26 +1,32 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import jobRequestService from "../services/jobRequestService";
 
 class JobRequestController {
-  async createJobRequest(req: Request, res: Response) {
+  async createJobRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const jobRequest = await jobRequestService.createJobRequest(req.body);
-      res.status(201).json(jobRequest);
+      res.status(201).json({
+        success: true,
+        data: jobRequest,
+      });
     } catch (error) {
-      res.status(400).json({ message: "Error creating job request", error });
+      next(error);
     }
   }
 
-  async getJobRequests(req: Request, res: Response) {
+  async getJobRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const jobRequests = await jobRequestService.getJobRequests();
-      res.status(200).json(jobRequests);
+      res.status(200).json({
+        success: true,
+        data: jobRequests,
+      });
     } catch (error) {
-      res.status(400).json({ message: "Error fetching job requests", error });
+      next(error);
     }
   }
 
-  async getJobRequestById(req: Request, res: Response) {
+  async getJobRequestById(req: Request, res: Response, next: NextFunction) {
     try {
       const jobRequest = await jobRequestService.getJobRequestById(
         req.params.id
@@ -28,13 +34,16 @@ class JobRequestController {
       if (!jobRequest) {
         return res.status(404).json({ message: "Job request not found" });
       }
-      res.status(200).json(jobRequest);
+      res.status(200).json({
+        success: true,
+        data: jobRequest,
+      });
     } catch (error) {
-      res.status(400).json({ message: "Error fetching job request", error });
+      next(error);
     }
   }
 
-  async updateJobRequest(req: Request, res: Response) {
+  async updateJobRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const jobRequest = await jobRequestService.updateJobRequest(
         req.params.id,
@@ -43,13 +52,16 @@ class JobRequestController {
       if (!jobRequest) {
         return res.status(404).json({ message: "Job request not found" });
       }
-      res.status(200).json(jobRequest);
+      res.status(200).json({
+        success: true,
+        data: jobRequest,
+      });
     } catch (error) {
-      res.status(400).json({ message: "Error updating job request", error });
+      next(error);
     }
   }
 
-  async deleteJobRequest(req: Request, res: Response) {
+  async deleteJobRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const jobRequest = await jobRequestService.deleteJobRequest(
         req.params.id
@@ -57,9 +69,12 @@ class JobRequestController {
       if (!jobRequest) {
         return res.status(404).json({ message: "Job request not found" });
       }
-      res.status(200).json({ message: "Job request deleted successfully" });
+      res.status(200).json({
+        success: true,
+        message: "Job request deleted successfully",
+      });
     } catch (error) {
-      res.status(400).json({ message: "Error deleting job request", error });
+      next(error);
     }
   }
 }

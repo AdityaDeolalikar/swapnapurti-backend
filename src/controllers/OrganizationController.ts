@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { OrganizationService } from "../services/OrganizationService";
+import AppError from "../core/errors/app-error";
 
 export class OrganizationController {
   private organizationService: OrganizationService;
@@ -8,28 +9,46 @@ export class OrganizationController {
     this.organizationService = new OrganizationService();
   }
 
-  createOrganization = async (req: Request, res: Response): Promise<void> => {
+  createOrganization = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const organization = await this.organizationService.createOrganization(
         req.body
       );
-      res.status(201).json(organization);
+      res.status(201).json({
+        success: true,
+        data: organization,
+      });
     } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      next(error);
     }
   };
 
-  getAllOrganizations = async (_req: Request, res: Response): Promise<void> => {
+  getAllOrganizations = async (
+    _req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const organizations =
         await this.organizationService.getAllOrganizations();
-      res.status(200).json(organizations);
+      res.status(200).json({
+        success: true,
+        data: organizations,
+      });
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      next(error);
     }
   };
 
-  getOrganizationById = async (req: Request, res: Response): Promise<void> => {
+  getOrganizationById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const organization = await this.organizationService.getOrganizationById(
         req.params.id
@@ -38,13 +57,20 @@ export class OrganizationController {
         res.status(404).json({ message: "Organization not found" });
         return;
       }
-      res.status(200).json(organization);
+      res.status(200).json({
+        success: true,
+        data: organization,
+      });
     } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      next(error);
     }
   };
 
-  updateOrganization = async (req: Request, res: Response): Promise<void> => {
+  updateOrganization = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const organization = await this.organizationService.updateOrganization(
         req.params.id,
@@ -54,43 +80,64 @@ export class OrganizationController {
         res.status(404).json({ message: "Organization not found" });
         return;
       }
-      res.status(200).json(organization);
+      res.status(200).json({
+        success: true,
+        data: organization,
+      });
     } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      next(error);
     }
   };
 
-  deleteOrganization = async (req: Request, res: Response): Promise<void> => {
+  deleteOrganization = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const organization = await this.organizationService.deleteOrganization(
         req.params.id
       );
       if (!organization) {
-        res.status(404).json({ message: "Organization not found" });
+        res.status(404).json({
+          success: false,
+          message: "Organization not found",
+        });
         return;
       }
-      res.status(200).json({ message: "Organization deleted successfully" });
+      res.status(200).json({
+        success: true,
+        message: "Organization deleted successfully",
+      });
     } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      next(error);
     }
   };
 
   getOrganizationsByDistrict = async (
     req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
   ): Promise<void> => {
     try {
       const organizations =
         await this.organizationService.getOrganizationsByDistrict(
           req.params.district
         );
-      res.status(200).json(organizations);
+      res.status(200).json({
+        success: true,
+        data: organizations,
+      });
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      next(error);
     }
   };
 
-  assignOrganization = async (req: Request, res: Response): Promise<void> => {
+  assignOrganization = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const { organizationId, userId } = req.body;
       const organization = await this.organizationService.assignOrganization(
@@ -98,12 +145,18 @@ export class OrganizationController {
         userId
       );
       if (!organization) {
-        res.status(404).json({ message: "Organization not found" });
+        res.status(404).json({
+          success: false,
+          message: "Organization not found",
+        });
         return;
       }
-      res.status(200).json(organization);
+      res.status(200).json({
+        success: true,
+        data: organization,
+      });
     } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      next(error);
     }
   };
 }

@@ -1,3 +1,4 @@
+import AppError from "../core/errors/app-error";
 import { Event, IEvent } from "../models/Event";
 import mongoose from "mongoose";
 
@@ -17,7 +18,7 @@ class EventService {
 
   async getEventById(id: string): Promise<IEvent | null> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid event ID");
+      throw new AppError("Invalid event ID", 400);
     }
     return Event.findById(id)
       .populate("createdBy", "name email")
@@ -29,7 +30,7 @@ class EventService {
     updateData: Partial<IEvent>
   ): Promise<IEvent | null> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid event ID");
+      throw new AppError("Invalid event ID", 400);
     }
     return Event.findByIdAndUpdate(
       id,
@@ -42,7 +43,7 @@ class EventService {
 
   async deleteEvent(id: string): Promise<IEvent | null> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid event ID");
+      throw new AppError("Invalid event ID", 400);
     }
     return Event.findByIdAndDelete(id);
   }

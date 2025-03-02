@@ -1,38 +1,47 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { locationService } from "../services/locationService";
 
 export class LocationController {
-  async getAllLocations(req: Request, res: Response) {
+  async getAllLocations(req: Request, res: Response, next: NextFunction) {
     try {
       const locations = await locationService.getAllLocations();
-      res.json(locations);
+      res.json({
+        success: true,
+        data: locations,
+      });
     } catch (error) {
-      res.status(500).json({ message: "Error fetching locations", error });
+      next(error);
     }
   }
 
-  async getLocationById(req: Request, res: Response) {
+  async getLocationById(req: Request, res: Response, next: NextFunction) {
     try {
       const location = await locationService.getLocationById(req.params.id);
       if (!location) {
         return res.status(404).json({ message: "Location not found" });
       }
-      res.json(location);
+      res.json({
+        success: true,
+        data: location,
+      });
     } catch (error) {
-      res.status(500).json({ message: "Error fetching location", error });
+      next(error);
     }
   }
 
-  async createLocation(req: Request, res: Response) {
+  async createLocation(req: Request, res: Response, next: NextFunction) {
     try {
       const location = await locationService.createLocation(req.body);
-      res.status(201).json(location);
+      res.status(201).json({
+        success: true,
+        data: location,
+      });
     } catch (error) {
-      res.status(500).json({ message: "Error creating location", error });
+      next(error);
     }
   }
 
-  async updateLocation(req: Request, res: Response) {
+  async updateLocation(req: Request, res: Response, next: NextFunction) {
     try {
       const location = await locationService.updateLocation(
         req.params.id,
@@ -41,21 +50,27 @@ export class LocationController {
       if (!location) {
         return res.status(404).json({ message: "Location not found" });
       }
-      res.json(location);
+      res.json({
+        success: true,
+        data: location,
+      });
     } catch (error) {
-      res.status(500).json({ message: "Error updating location", error });
+      next(error);
     }
   }
 
-  async deleteLocation(req: Request, res: Response) {
+  async deleteLocation(req: Request, res: Response, next: NextFunction) {
     try {
       const location = await locationService.deleteLocation(req.params.id);
       if (!location) {
         return res.status(404).json({ message: "Location not found" });
       }
-      res.json({ message: "Location deleted successfully" });
+      res.json({
+        success: true,
+        message: "Location deleted successfully",
+      });
     } catch (error) {
-      res.status(500).json({ message: "Error deleting location", error });
+      next(error);
     }
   }
 }

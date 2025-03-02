@@ -1,10 +1,14 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { InternshipRequestService } from "../services/internshipRequestService";
 
 const internshipRequestService = new InternshipRequestService();
 
 export class InternshipRequestController {
-  createInternshipRequest = async (req: Request, res: Response) => {
+  createInternshipRequest = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const internshipRequest =
         await internshipRequestService.createInternshipRequest(req.body);
@@ -14,14 +18,15 @@ export class InternshipRequestController {
         data: internshipRequest,
       });
     } catch (error) {
-      res.status(500).json({
-        status: "error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+      next(error);
     }
   };
 
-  getInternshipRequest = async (req: Request, res: Response) => {
+  getInternshipRequest = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const internshipRequest =
         await internshipRequestService.getInternshipRequest(req.params.id);
@@ -31,14 +36,15 @@ export class InternshipRequestController {
         data: internshipRequest,
       });
     } catch (error) {
-      res.status(500).json({
-        status: "error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+      next(error);
     }
   };
 
-  getAllInternshipRequests = async (req: Request, res: Response) => {
+  getAllInternshipRequests = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const internshipRequests =
         await internshipRequestService.getAllInternshipRequests();
@@ -48,14 +54,15 @@ export class InternshipRequestController {
         data: internshipRequests,
       });
     } catch (error) {
-      res.status(500).json({
-        status: "error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+      next(error);
     }
   };
 
-  updateInternshipRequest = async (req: Request, res: Response) => {
+  updateInternshipRequest = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const internshipRequest =
         await internshipRequestService.updateInternshipRequest(
@@ -75,12 +82,19 @@ export class InternshipRequestController {
     }
   };
 
-  deleteInternshipRequest = async (req: Request, res: Response) => {
-    await internshipRequestService.deleteInternshipRequest(req.params.id);
-
-    res.status(204).json({
-      status: "success",
-      data: null,
-    });
+  deleteInternshipRequest = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      await internshipRequestService.deleteInternshipRequest(req.params.id);
+      res.status(204).json({
+        status: "success",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
   };
 }
