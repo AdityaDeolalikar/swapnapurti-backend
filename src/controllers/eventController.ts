@@ -22,7 +22,14 @@ class EventController {
 
   getAllEvents: AppRequestHandler = async (req, res, next) => {
     try {
-      const events = await eventService.getAllEvents(req.query);
+      const baseQuery = {
+        ...req.query,
+        status:
+          res.locals.user.role === "PARTICIPANT"
+            ? "APPROVED"
+            : req.query.status,
+      };
+      const events = await eventService.getAllEvents(baseQuery);
       res.json({
         success: true,
         data: events,
@@ -51,6 +58,12 @@ class EventController {
   updateEvent: AppRequestHandler<IEvent, IEvent, unknown, { id: string }> =
     async (req, res, next) => {
       try {
+        if (req.body?.status) {
+          throw new AppError(
+            "You are not authorized to update event status",
+            403
+          );
+        }
         const event = await eventService.updateEvent(req.params.id, req.body);
         if (!event) {
           throw new AppError("Event not found", 404);

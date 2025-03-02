@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 import { OrganizationService } from "../services/OrganizationService";
 import AppError from "../core/errors/app-error";
 import { AppRequestHandler } from "../common/types/request";

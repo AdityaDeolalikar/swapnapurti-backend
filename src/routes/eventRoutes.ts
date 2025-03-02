@@ -28,16 +28,6 @@ router.get(
   eventController.getEventById
 );
 
-router.put(
-  "/:id/action",
-  RequiredRoles([
-    rolesEnum.PARTICIPANT,
-    rolesEnum.MANAGING_DIRECTOR,
-    rolesEnum.PROMOTING_MANAGER,
-  ]),
-  eventController.updateEventStatus
-);
-
 router.post(
   "/",
   RequiredRoles([
