@@ -1,18 +1,18 @@
-import { Request, Response } from "express";
 import User from "../models/User";
+import { AppRequestHandler } from "../common/types/request";
+import AppError from "../core/errors/app-error";
 
-export const getProfile = async (
-  req: Request & { user: any },
-  res: Response
-) => {
+export const getProfile: AppRequestHandler<
+  unknown,
+  unknown,
+  unknown,
+  unknown
+> = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.userId).select("-password");
+    const user = await User.findById(res.locals.user._id).select("-password");
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new AppError("User not found", 404);
     }
 
     res.status(200).json({
@@ -22,11 +22,6 @@ export const getProfile = async (
       },
     });
   } catch (error) {
-    console.error("Get Profile Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };

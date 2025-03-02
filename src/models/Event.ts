@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from "mongoose";
-import User from "./User";
 
 export interface IItinerary {
   time: string;

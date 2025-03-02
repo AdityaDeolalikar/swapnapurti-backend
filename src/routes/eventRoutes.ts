@@ -1,24 +1,71 @@
 import express from "express";
 import { eventController } from "../controllers/eventController";
+import RequiredRoles from "../middleware/required-role";
+import { rolesEnum } from "../constants/roles";
 
 const router = express.Router();
 
-// Public routes
-router.get("/", eventController.getAllEvents);
-//@ts-ignore
-router.get("/:id", eventController.getEventById);
+router.get(
+  "/",
+  RequiredRoles([
+    rolesEnum.PARTICIPANT,
+    rolesEnum.MANAGING_DIRECTOR,
+    rolesEnum.PROMOTING_MANAGER,
+    rolesEnum.EVENT_MANAGER,
+    rolesEnum.FINANCE_MANAGER,
+    rolesEnum.SALES_MANAGER,
+  ]),
+  eventController.getAllEvents
+);
 
-// Protected routes
-// router.use(auth)
-//@ts-ignore
-router.post("/", eventController.createEvent);
-//@ts-ignore
-router.put("/:id", eventController.updateEvent);
-//@ts-ignore
-router.put("/:id/status", eventController.updateEventStatus);
-//@ts-ignore
+router.get(
+  "/:id",
+  RequiredRoles([
+    rolesEnum.PARTICIPANT,
+    rolesEnum.MANAGING_DIRECTOR,
+    rolesEnum.PROMOTING_MANAGER,
+  ]),
+  eventController.getEventById
+);
+
+router.put(
+  "/:id/action",
+  RequiredRoles([
+    rolesEnum.PARTICIPANT,
+    rolesEnum.MANAGING_DIRECTOR,
+    rolesEnum.PROMOTING_MANAGER,
+  ]),
+  eventController.updateEventStatus
+);
+
+router.post(
+  "/",
+  RequiredRoles([
+    rolesEnum.EVENT_MANAGER,
+    rolesEnum.PROMOTING_MANAGER,
+    rolesEnum.ADMIN,
+  ]),
+  eventController.createEvent
+);
+
+router.put(
+  "/:id",
+  RequiredRoles([rolesEnum.MANAGING_DIRECTOR, rolesEnum.PROMOTING_MANAGER]),
+  eventController.updateEvent
+);
+
+router.put(
+  "/:id/status",
+  RequiredRoles([rolesEnum.ADMIN, rolesEnum.MANAGING_DIRECTOR]),
+  eventController.updateEventStatus
+);
+
 router.delete("/:id", eventController.deleteEvent);
-//@ts-ignore
-router.get("/user/my-events", eventController.getMyEvents);
+
+router.get(
+  "/user/my-events",
+  RequiredRoles([rolesEnum.PARTICIPANT]),
+  eventController.getMyEvents
+);
 
 export const eventRoutes = router;

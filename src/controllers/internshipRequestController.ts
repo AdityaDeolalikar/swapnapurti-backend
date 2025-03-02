@@ -1,20 +1,21 @@
-import { Request, Response, NextFunction } from "express";
 import { InternshipRequestService } from "../services/internshipRequestService";
+import { AppRequestHandler } from "../common/types/request";
+import { IInternshipRequest } from "../models/InternshipRequest";
+import AppError from "../core/errors/app-error";
 
 const internshipRequestService = new InternshipRequestService();
 
 export class InternshipRequestController {
-  createInternshipRequest = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  createInternshipRequest: AppRequestHandler<
+    IInternshipRequest,
+    IInternshipRequest
+  > = async (req, res, next) => {
     try {
       const internshipRequest =
         await internshipRequestService.createInternshipRequest(req.body);
 
       res.status(201).json({
-        status: "success",
+        success: true,
         data: internshipRequest,
       });
     } catch (error) {
@@ -22,17 +23,22 @@ export class InternshipRequestController {
     }
   };
 
-  getInternshipRequest = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getInternshipRequest: AppRequestHandler<
+    IInternshipRequest,
+    unknown,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       const internshipRequest =
         await internshipRequestService.getInternshipRequest(req.params.id);
 
+      if (!internshipRequest) {
+        throw new AppError("Internship request not found", 404);
+      }
+
       res.status(200).json({
-        status: "success",
+        success: true,
         data: internshipRequest,
       });
     } catch (error) {
@@ -40,17 +46,18 @@ export class InternshipRequestController {
     }
   };
 
-  getAllInternshipRequests = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getAllInternshipRequests: AppRequestHandler<
+    IInternshipRequest[],
+    unknown,
+    unknown,
+    unknown
+  > = async (req, res, next) => {
     try {
       const internshipRequests =
         await internshipRequestService.getAllInternshipRequests();
 
       res.status(200).json({
-        status: "success",
+        success: true,
         data: internshipRequests,
       });
     } catch (error) {
@@ -58,39 +65,40 @@ export class InternshipRequestController {
     }
   };
 
-  updateInternshipRequest = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  updateInternshipRequest: AppRequestHandler<
+    IInternshipRequest,
+    IInternshipRequest,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       const internshipRequest =
         await internshipRequestService.updateInternshipRequest(
           req.params.id,
           req.body
         );
-
+      if (!internshipRequest) {
+        throw new AppError("Internship request not found", 404);
+      }
       res.status(200).json({
-        status: "success",
+        success: true,
         data: internshipRequest,
       });
     } catch (error) {
-      res.status(500).json({
-        status: "error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+      next(error);
     }
   };
 
-  deleteInternshipRequest = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  deleteInternshipRequest: AppRequestHandler<
+    unknown,
+    unknown,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       await internshipRequestService.deleteInternshipRequest(req.params.id);
       res.status(204).json({
-        status: "success",
+        success: true,
         data: null,
       });
     } catch (error) {

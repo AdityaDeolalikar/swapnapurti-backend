@@ -1,10 +1,15 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
-import { Request, Response } from "express";
-
+import { AppRequestHandler } from "../common/types/request";
+import AppError from "../core/errors/app-error";
 // Register Step 1
-export const registerStep1 = async (req: Request, res: Response) => {
+export const registerStep1: AppRequestHandler<
+  unknown,
+  any,
+  unknown,
+  unknown
+> = async (req, res, next) => {
   try {
     const { fullName, email, gender, mobile } = req.body;
 
@@ -14,13 +19,12 @@ export const registerStep1 = async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message:
-          existingUser.email === email.toLowerCase()
-            ? "Email already registered"
-            : "Mobile number already registered",
-      });
+      throw new AppError(
+        existingUser.email === email.toLowerCase()
+          ? "Email already registered"
+          : "Mobile number already registered",
+        400
+      );
     }
 
     // Create new user
@@ -48,16 +52,17 @@ export const registerStep1 = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Registration Step 1 Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };
 
 // Register Step 2
-export const registerStep2 = async (req: Request, res: Response) => {
+export const registerStep2: AppRequestHandler<
+  unknown,
+  any,
+  unknown,
+  { userId: string }
+> = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const {
@@ -77,27 +82,20 @@ export const registerStep2 = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new AppError("User not found", 404);
     }
 
     // Check if step 1 is completed
     if (user.registrationStep !== 1) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid registration step",
-      });
+      throw new AppError("Invalid registration step", 400);
     }
 
     // Validate emergency mobile is different from primary mobile
     if (emergencyMobile === user.mobile) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Emergency contact must be different from primary mobile number",
-      });
+      throw new AppError(
+        "Emergency contact must be different from primary mobile number",
+        400
+      );
     }
 
     // Update user with step 2 data
@@ -127,34 +125,28 @@ export const registerStep2 = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Registration Step 2 Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };
 
 // Login
-export const login = async (req: Request, res: Response) => {
+export const login: AppRequestHandler<unknown, any, unknown, unknown> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const { email, password } = req.body;
 
     // Check if user exists
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
+      throw new AppError("Invalid email or password", 401);
     }
 
     // Check if registration is complete
     if (user.registrationStep !== 2) {
-      return res.status(400).json({
-        success: false,
-        message: "Please complete your registration first",
-      });
+      throw new AppError("Registration is not complete", 400);
     }
 
     // Verify password
@@ -163,10 +155,7 @@ export const login = async (req: Request, res: Response) => {
       user.password as string
     );
     if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
+      throw new AppError("Invalid email or password", 401);
     }
 
     // Generate JWT token
@@ -194,16 +183,12 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };
 
 // Logout
-export const logout = async (req: Request, res: Response) => {
+export const logout: AppRequestHandler = async (req, res, next) => {
   try {
     // Since we're using JWT, we don't need to do anything on the server
     // The client will remove the token
@@ -213,10 +198,6 @@ export const logout = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Logout Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };

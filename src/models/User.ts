@@ -1,5 +1,26 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import bcrypt from "bcryptjs";
+
+export interface IUser {
+  _id: Types.ObjectId;
+  fullName: string;
+  email: string;
+  gender: string;
+  mobile: string;
+  dateOfBirth: Date;
+  bloodGroup: string;
+  permanentAddress: string;
+  temporaryAddress: string;
+  district: string;
+  occupation: string;
+  organization: string;
+  photo: string;
+  emergencyMobile: string;
+  password: string;
+  registrationStep: number;
+  isVerified: boolean;
+  createdAt: Date;
+}
 
 const userSchema = new mongoose.Schema({
   // Step 1 fields

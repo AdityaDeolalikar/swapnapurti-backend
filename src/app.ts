@@ -11,8 +11,8 @@ import jobRequestRoutes from "./routes/jobRequestRoutes";
 import organizationRoutes from "./routes/organizationRoutes";
 import { Request, Response, NextFunction } from "express";
 import AppError from "./core/errors/app-error";
+import { AuthMiddleware } from "./middleware/auth.middleware";
 
-// Load environment variables
 // Load environment variables
 dotenv.config();
 
@@ -31,23 +31,23 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
+
+app.use(AuthMiddleware);
 app.use("/api/user", userRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/internship-requests", internshipRequestRoutes);
 app.use("/api/job-requests", jobRequestRoutes);
 app.use("/api/organizations", organizationRoutes);
+
 // Basic route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Swapnapurti Camping API" });
 });
 
-app.get("/test", (req, res) => {
-  throw new Error("Test error");
-});
-
 // Error handling middleware
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
+  console.log("Error", err);
   res.status(err.statusCode || 500).json({
     success: false,
     message: err?.message ?? "Something went wrong!",

@@ -1,17 +1,14 @@
-import { Request, Response, NextFunction } from "express";
 import { eventService } from "../services/eventService";
-import { ObjectId } from "mongodb";
+import { AppRequestHandler } from "../common/types/request";
+import { IEvent } from "../models/Event";
+import AppError from "../core/errors/app-error";
 
 class EventController {
-  async createEvent(
-    req: Request & { user: any },
-    res: Response,
-    next: NextFunction
-  ) {
+  createEvent: AppRequestHandler<any, IEvent> = async (req, res, next) => {
     try {
       const eventData = {
         ...req.body,
-        createdBy: req?.user?.userId ?? "67c1fdfb5e4f62dad78409be", // Assuming you have user data in req.user from auth middleware
+        createdBy: res.locals.user._id,
       };
       const event = await eventService.createEvent(eventData);
       res.status(201).json({
@@ -21,9 +18,9 @@ class EventController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async getAllEvents(req: Request, res: Response, next: NextFunction) {
+  getAllEvents: AppRequestHandler = async (req, res, next) => {
     try {
       const events = await eventService.getAllEvents(req.query);
       res.json({
@@ -33,72 +30,65 @@ class EventController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async getEventById(
-    req: Request<{ id: string }, any, any, any, Record<string, any>>,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const event = await eventService.getEventById(req.params.id);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
+  getEventById: AppRequestHandler<IEvent, unknown, unknown, { id: string }> =
+    async (req, res, next) => {
+      try {
+        const event = await eventService.getEventById(req.params.id);
+        if (!event) {
+          throw new AppError("Event not found", 404);
+        }
+        res.json({
+          success: true,
+          data: event,
+        });
+      } catch (error) {
+        next(error);
       }
-      res.json({
-        success: true,
-        data: event,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+    };
 
-  async updateEvent(
-    req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const event = await eventService.updateEvent(req.params.id, req.body);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
+  updateEvent: AppRequestHandler<IEvent, IEvent, unknown, { id: string }> =
+    async (req, res, next) => {
+      try {
+        const event = await eventService.updateEvent(req.params.id, req.body);
+        if (!event) {
+          throw new AppError("Event not found", 404);
+        }
+        res.json({
+          success: true,
+          data: event,
+        });
+      } catch (error) {
+        next(error);
       }
-      res.json({
-        success: true,
-        data: event,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+    };
 
-  async deleteEvent(
-    req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const event = await eventService.deleteEvent(req.params.id);
-      if (!event) {
-        return res.status(404).json({ error: "Event not found" });
+  deleteEvent: AppRequestHandler<unknown, unknown, unknown, { id: string }> =
+    async (req, res, next) => {
+      try {
+        const event = await eventService.deleteEvent(req.params.id);
+        if (!event) {
+          throw new AppError("Event not found", 404);
+        }
+        res.json({
+          success: true,
+          message: "Event deleted successfully",
+        });
+      } catch (error) {
+        next(error);
       }
-      res.json({
-        success: true,
-        message: "Event deleted successfully",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+    };
 
-  async getMyEvents(
-    req: Request & { user: any },
-    res: Response,
-    next: NextFunction
-  ) {
+  getMyEvents: AppRequestHandler<IEvent[], unknown, unknown, unknown> = async (
+    req,
+    res,
+    next
+  ) => {
     try {
-      const events = await eventService.getEventsByCreator(req.user.userId);
+      const events = await eventService.getEventsByCreator(
+        res.locals.user._id.toString()
+      );
       res.json({
         success: true,
         data: events,
@@ -106,18 +96,22 @@ class EventController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async updateEventStatus(
-    req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction
-  ) {
+  updateEventStatus: AppRequestHandler<
+    IEvent,
+    IEvent,
+    unknown,
+    { id: string }
+  > = async (req, res, next) => {
     try {
       const event = await eventService.updateEventStatus(
         req.params.id,
         req.body.status
       );
+      if (!event) {
+        throw new AppError("Event not found", 404);
+      }
       res.json({
         success: true,
         data: event,
@@ -125,7 +119,6 @@ class EventController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }
-
 export const eventController = new EventController();
